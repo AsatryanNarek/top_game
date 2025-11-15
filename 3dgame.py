@@ -52,9 +52,9 @@ class Game(ShowBase):
         self.model_Table.setH(self.model_Table.getH())
 
         self.model_room2 = loader.loadModel('models/rooom2/scene.gltf')
-        self.model_room2.setScale(20)
+        self.model_room2.setScale(15)
         self.model_room2.reparentTo(render)
-        self.model_room2.setPos(300, -200, -50)
+        self.model_room2.setPos(300, -200, 5)
         self.model_room2.setH(self.model_room2.getH())
         self.model_room2.setHpr(0, 90, 90)
 
@@ -101,9 +101,10 @@ class Game(ShowBase):
 
         #  Камера
         self.disableMouse()
-        self.camera_distance = 35
-        self.camera_height = 12
+        self.camera_distance = 1
+        self.camera_height = 10
         self.camera_angle_h = 0
+        self.camera_angle_v = 0
 
         # Сховати курсор
         props = WindowProperties()
@@ -214,8 +215,14 @@ class Game(ShowBase):
             x = self.win.getPointer(0).getX()
             center_x = self.win.getXSize() / 2
 
+            y = self.win.getPointer(0).getY()
+            center_y = self.win.getYSize() / 2
+
             # Поворот за мишкою
             self.camera_angle_h -= (x - center_x) * 0.2
+            self.camera_angle_v += (y - center_y) * 0.2
+
+            self.camera_angle_v = max(-75, min(75, self.camera_angle_v))
 
             # Повернути мишку назад до центру
             self.center_mouse()
@@ -236,12 +243,18 @@ class Game(ShowBase):
 
         #  оберт камери по колу
         px, py, pz = self.player.getPos()
-        rad = math.radians(self.camera_angle_h)
-        cam_x = px + self.camera_distance * math.sin(rad)
-        cam_y = py - self.camera_distance * math.cos(rad)
+        rad_h = math.radians(self.camera_angle_h)
+        cam_x = px + self.camera_distance * math.sin(rad_h)
+        cam_y = py - self.camera_distance * math.cos(rad_h)
 
-        self.camera.setPos(cam_x, cam_y, pz + self.camera_height)
-        self.camera.lookAt(self.player.getPos() + Point3(0, 0, 5))
+        rad_v = math.radians(self.camera_angle_v)
+        # Горизонтальний радіус "камери навколо гравця"
+        dist = self.camera_distance * math.cos(rad_v)
+        cam_z = pz + self.camera_height + self.camera_distance * math.sin(rad_v)
+
+
+        self.camera.setPos(cam_x, cam_y, cam_z)
+        self.camera.lookAt(self.player.getPos() + Point3(0, 0, 10))
 
         return Task.cont
 
